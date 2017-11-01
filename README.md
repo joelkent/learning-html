@@ -1,2 +1,4 @@
 # learning-html
-Various files while I learn HTML
+These are HTML files as I learn.
+
+* [battleship.html](battleship.html)
