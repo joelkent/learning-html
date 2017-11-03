@@ -1,0 +1,154 @@
+<html>
+<body>
+<h1>Joel's Amazing Maze</h1>
+
+<table>
+	<tr>
+		<td>
+<table id="maze" border="0" style="font-size:300%;">
+</table>
+		</td>
+		<td>
+
+<table>
+	<tr>
+		<td></td>
+		<td><button style="width:100%;" onclick="moveUp()">UP</button></td>
+		<td></td>
+	</tr>
+	<tr>
+		<td><button onclick="moveLeft()">LEFT</button></td>
+		<td></td>
+		<td><button onclick="moveRight()">RIGHT</button></td>
+	</tr>
+	<tr>
+		<td></td>
+		<td><button onclick="moveDown()">DOWN</button></td>
+		<td></td>
+	</tr>
+</table>
+		</td>
+	</tr>
+</table>
+
+<script type="text/javascript">
+
+height = 5;
+width = 10;
+
+block = "\u2588";
+person = "\uc6c3";
+person = "O";
+
+maze = document.getElementById("maze");
+
+// Create the table (tr's and td's)
+for (row = 0; row < height * 2 + 1; row++) {
+	tr = document.createElement("tr");
+	maze.appendChild(tr);
+	for (col = 0; col < width * 2 + 1; col++) {
+		td = document.createElement("td");
+		td.setAttribute("style", "padding:0;margin:0;");
+		td.setAttribute("cellpadding", "0");
+		td.setAttribute("cellspacing", "0");
+		tr.appendChild(td);
+	}
+}
+
+// Clear a cell 
+function clearCell(row, col, text) {
+	td = maze.getElementsByTagName("tr")[row].getElementsByTagName("td")[col];
+	while (td.firstChild) {
+	    td.firstChild.remove();
+	}
+}
+
+// Set a cell to specified text
+function setCell(row, col, text) {
+	clearCell(row, col);
+	td = maze.getElementsByTagName("tr")[row].getElementsByTagName("td")[col];
+	td.appendChild(document.createTextNode(text));
+}
+
+
+// Draw line along top & bottom
+for (col = 0; col < width * 2 + 1; col++) {
+	setCell(0, col, "\u2588");
+	setCell(height * 2, col, block);
+}
+
+// Draw line along left and right
+for (row = 0; row < height * 2 + 1; row++) {
+	setCell(row, 0, block);
+	setCell(row, width * 2, block);
+}
+
+// Draw a crude maze
+for (row = 2; row < height * 2 - 1; row += 2) {
+	blankCol = ((row * 123) % width) * 2 + 1;
+	for (col = 0; col < width * 2 + 1; col++) {
+		if (col != blankCol) {
+			setCell(row, col, block);
+		}
+	}
+}
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+	    moveUp();
+    }
+    else if (e.keyCode == '40') {
+	    moveDown();
+    }
+    else if (e.keyCode == '37') {
+	    moveLeft();
+    }
+    else if (e.keyCode == '39') {
+	    moveRight();
+    }
+}
+
+x = 0;
+y = 0;
+setCell(y * 2 + 1, x * 2 + 1, person);
+
+function moveLeft() {
+	clearCell(y * 2 + 1, x * 2 + 1);
+	if (x > 0) {
+		x--;
+	}
+	setCell(y * 2 + 1, x * 2 + 1, person);
+}
+
+function moveRight() {
+	clearCell(y * 2 + 1, x * 2 + 1);
+	if (x < width - 1) {
+		x++;
+	}
+	setCell(y * 2 + 1, x * 2 + 1, person);
+}
+
+function moveUp() {
+	clearCell(y * 2 + 1, x * 2 + 1);
+	if (y > 0) {
+		y--;
+	}
+	setCell(y * 2 + 1, x * 2 + 1, person);
+}
+
+function moveDown() {
+	clearCell(y * 2 + 1, x * 2 + 1);
+	if (y < height - 1) {
+		y++;
+	}
+	setCell(y * 2 + 1, x * 2 + 1, person);
+}
+
+</script>
+</body>
+</html>
