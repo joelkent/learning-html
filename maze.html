@@ -5,7 +5,7 @@
 <table>
 	<tr>
 		<td>
-<table id="maze" border="0" style="font-size:300%;">
+<table id="maze" border="0" style="font-size:200%;">
 </table>
 		</td>
 		<td>
@@ -33,24 +33,23 @@
 
 <script type="text/javascript">
 
-height = 5;
-width = 10;
+// Width and height must be odd numbers.
+height = 21;
+width = 31;
 
 block = "\u2588";
-person = "\uc6c3";
+person = "\uc6c3"; // Too wide, messes up board.
 person = "O";
+winner = "*";
 
 maze = document.getElementById("maze");
 
 // Create the table (tr's and td's)
-for (row = 0; row < height * 2 + 1; row++) {
+for (row = 0; row < height; row++) {
 	tr = document.createElement("tr");
 	maze.appendChild(tr);
-	for (col = 0; col < width * 2 + 1; col++) {
+	for (col = 0; col < width; col++) {
 		td = document.createElement("td");
-		td.setAttribute("style", "padding:0;margin:0;");
-		td.setAttribute("cellpadding", "0");
-		td.setAttribute("cellspacing", "0");
 		tr.appendChild(td);
 	}
 }
@@ -85,26 +84,83 @@ function setCell(row, col, text) {
 
 
 // Draw line along top & bottom
-for (col = 0; col < width * 2 + 1; col++) {
+for (col = 0; col < width; col++) {
 	setCell(0, col, "\u2588");
-	setCell(height * 2, col, block);
+	setCell(height - 1, col, block);
 }
 
 // Draw line along left and right
-for (row = 0; row < height * 2 + 1; row++) {
+for (row = 0; row < height; row++) {
 	setCell(row, 0, block);
-	setCell(row, width * 2, block);
+	setCell(row, width - 1, block);
 }
 
 // Draw a crude maze
-for (row = 2; row < height * 2 - 1; row += 2) {
-	blankCol = ((row * 123) % width) * 2 + 1;
-	for (col = 0; col < width * 2 + 1; col++) {
-		if (col != blankCol) {
-			setCell(row, col, block);
+function simpleMaze() {
+	for (row = 2; row < height - 1; row += 2) {
+		blankCol = Math.floor((Math.random() * (width - 2)) + 1);
+		for (col = 0; col < width; col++) {
+			if (col != blankCol) {
+				setCell(row, col, block);
+			}
 		}
 	}
 }
+//simpleMaze();
+
+// Draw a clever maze
+function cleverMaze() {
+	for (r = 0; r < height; r++) {
+		for (c = 0; c < width; c++) {
+			setCell(r, c, block);
+		}
+	}
+	trace = "";
+	r = height - 2;
+	c = width - 2;
+	hist = [];
+	hist.push({r:r, c:c});
+	limit = 10;
+	while (hist.length > 0) {
+		clearCell(r, c);
+		trace += "{" + r + "," + c + "}";
+		check = [];
+		if (c - 2 > 0 && !cellEmpty(r, c - 2)) check.push('L');
+		if (r - 2 > 0 && !cellEmpty(r - 2, c)) check.push('U');
+		if (c + 2 < width && !cellEmpty(r, c + 2)) check.push('R');
+		if (r + 2 < height && !cellEmpty(r + 2, c )) check.push('D');
+		//alert(check.join());
+		trace += "[" + check.join() + "]";
+		if (check.length > 0 && limit-- > 0) {
+			hist.push({r:r, c:c});
+			dir = check[Math.floor(Math.random() * check.length)];
+			if (dir == 'L') {
+				c--; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+				c--; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+			}
+			if (dir == 'R') {
+				c++; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+				c++; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+			}
+			if (dir == 'U') {
+				r--; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+				r--; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+			}
+			if (dir == 'D') {
+				r++; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+				r++; clearCell(r, c); trace += "->(" + r + "," + c + ")";
+			}
+		} else {
+			pair = hist.pop();
+			r = pair.r;
+			c = pair.c;
+			trace += "\n[" + r + "," + c + "]";
+			limit = 10;
+		}
+	}
+	//alert(trace);
+}
+cleverMaze();
 
 document.onkeydown = checkKey;
 
@@ -126,48 +182,64 @@ function checkKey(e) {
     }
 }
 
-x = 0;
-y = 0;
-setCell(y * 2 + 1, x * 2 + 1, person);
+x = 1;
+y = 1;
+
+exitX = width - 1;
+exitY = height - 2;
+
+setCell(y, x, person);
+clearCell(exitY, exitX);
 
 function moveLeft() {
-	clearCell(y * 2 + 1, x * 2 + 1);
-	if (x > 0 && cellEmpty(y * 2 + 1, x * 2)) {
-		x--;
+	clearCell(y, x);
+	if (x > 0 && cellEmpty(y, x - 1)) {
+		x = x - 1;
 	} else {
 		beep();
 	}
-	setCell(y * 2 + 1, x * 2 + 1, person);
+	setCell(y, x, person);
+	checkIfWon();
 }
 
 function moveRight() {
-	clearCell(y * 2 + 1, x * 2 + 1);
-	if (x < width - 1 && cellEmpty(y * 2 + 1, x * 2 + 2)) {
-		x++;
+	clearCell(y, x);
+	if (x < width - 1 && cellEmpty(y, x + 1)) {
+		x = x + 1;
 	} else {
 		beep();
 	}
-	setCell(y * 2 + 1, x * 2 + 1, person);
+	setCell(y, x, person);
+	checkIfWon();
 }
 
 function moveUp() {
-	clearCell(y * 2 + 1, x * 2 + 1);
-	if (y > 0 && cellEmpty(y * 2, x * 2 + 1)) {
+	clearCell(y, x);
+	if (y > 0 && cellEmpty(y - 1, x)) {
 		y--;
 	} else {
 		beep();
 	}
-	setCell(y * 2 + 1, x * 2 + 1, person);
+	setCell(y, x, person);
+	checkIfWon();
 }
 
 function moveDown() {
-	clearCell(y * 2 + 1, x * 2 + 1);
-	if (y < height - 1 && cellEmpty(y * 2 + 2, x * 2 + 1)) {
+	clearCell(y, x);
+	if (y < height - 1 && cellEmpty(y + 1, x)) {
 		y++;
 	} else {
 		beep();
 	}
-	setCell(y * 2 + 1, x * 2 + 1, person);
+	setCell(y, x, person);
+	checkIfWon();
+}
+
+function checkIfWon() {
+	if (x == exitX && y == exitY) {
+		beep();
+		setCell(y, x, winner);
+	}
 }
 
 function beep() {
