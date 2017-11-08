@@ -1,0 +1,135 @@
+<html>
+<head>
+
+<style>
+
+table, th, td {
+   border: 2px solid blue;
+}
+
+td {
+	width: 200;
+	height: 200;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 55;
+	color: brown;
+}
+</style>
+
+</head>
+<body>
+<h1>Tic Tac BLOW!</h1>
+<p>Player: <span id="player">X</span>.</p>
+<table border="1">
+<tr>
+<td id="0-0" onclick="clickCell(this)"></td>
+<td id="0-1" onclick="clickCell(this)"></td>
+<td id="0-2" onclick="clickCell(this)"></td>
+</tr>
+<tr>
+<td id="1-0" onclick="clickCell(this)"></td>
+<td id="1-1" onclick="clickCell(this)"></td>
+<td id="1-2" onclick="clickCell(this)"></td>
+</tr>
+<tr>
+<td id="2-0" onclick="clickCell(this)"></td>
+<td id="2-1" onclick="clickCell(this)"></td>
+<td id="2-2" onclick="clickCell(this)"></td>
+</tr>
+</table>
+<p>
+<button onclick="grenade()">BLOW IT UP!</button>
+</p>
+<p>
+<button onclick="clearBoard()">RESET</button>
+</p>
+
+<script type="text/javascript">
+
+var board = {}
+var doc = document;
+
+function clearBoard() {
+	for (row = 0; row < 3; row++) {
+		for (col = 0; col < 3; col++) {
+			board[row + "-" + col] = null;
+		}
+	}
+	xTurn = true;
+	drawBoard();
+}
+
+function drawBoard() {
+	for (row = 0; row < 3; row++) {
+		for (col = 0; col < 3; col++) {
+			var id = row + "-" + col;
+			td = doc.getElementById(id);
+
+			// Remove the old contents.
+			while (td.firstChild) {
+			    td.firstChild.remove();
+			}
+
+			if (board[id] != null) {
+				// Set it to the text (O or X)
+				td.appendChild(doc.createTextNode(board[id]));
+			}
+		}
+	}
+
+	// Update the next player's turn
+	span = doc.getElementById("player");
+	while (span.firstChild) {
+	    span.firstChild.remove();
+	}
+	who = xTurn ? "X" : "O";
+	span.appendChild(doc.createTextNode(who));
+}
+
+var xTurn = true;
+
+function clickCell(td) {
+	id = td.getAttribute("id");
+	if (board[id] == null) {
+		text = xTurn ? "X" : "O";
+		board[id] = text;
+		xTurn = !xTurn;
+		drawBoard();
+	}
+}
+
+function grenade() {
+	hitRow = Math.floor((Math.random() * 3));
+	hitCol = Math.floor((Math.random() * 3));
+	for (row = hitRow - 1; row <= hitRow + 1; row++) {
+		for (col = hitCol - 1; col <= hitCol + 1; col++) {
+			if (row >= 0 && row < 3 && col >= 0 && col < 3) {
+				var id = row + "-" + col;
+				board[id] = "G";
+			}
+		}
+	}
+	drawBoard();
+
+	setTimeout(function() {
+		for (row = 0; row < 3; row++) {
+			for (col = 0; col < 3; col++) {
+				var id = row + "-" + col;
+				if (board[id] != null && board[id] == "G") {
+					board[id] = null;
+				}
+			}
+		}
+		xTurn = !xTurn;
+		drawBoard();
+	}, 1000);
+
+}
+
+drawBoard();
+
+</script>
+
+</body>
+</html>
